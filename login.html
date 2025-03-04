@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacker Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #matrixCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .terminal {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            text-align: center;
+            transition: 0.2s ease-in-out;
+        }
+
+        .input-container {
+            margin: 10px 0;
+        }
+
+        .prompt {
+            color: #00ff00;
+        }
+
+        input {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            padding: 5px;
+            outline: none;
+        }
+
+        button {
+            background: black;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 5px 10px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: black;
+        }
+
+        .glitch {
+            animation: glitch 0.2s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+            100% { transform: translateX(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #terminalOutput {
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    <div class="terminal" id="terminalBox">
+        <h1>LOGIN REQUIRED</h1>
+        <div class="input-container">
+            <span class="prompt">Username: </span><input type="text" id="username" onkeypress="playTypingSound()" autofocus>
+        </div>
+        <div class="input-container">
+            <span class="prompt">Password: </span><input type="password" id="password" onkeypress="playTypingSound()">
+        </div>
+        <button onclick="authenticate()">ENTER</button>
+        <p id="message"></p>
+    </div>
+    <div class="terminal hidden" id="hackerTerminal">
+        <h1>ACCESS GRANTED</h1>
+        <pre id="terminalOutput"></pre>
+        <input type="text" id="commandInput" placeholder="Enter command..." onkeypress="playTypingSound()" onkeydown="handleCommand(event)">
+        <button onclick="logout()">LOGOUT</button>
+    </div>
+
+    <audio id="typingSound" src="typing.mp3"></audio>
+    <audio id="accessGranted" src="access-granted.mp3"></audio>
+    <audio id="accessDenied" src="access-denied.mp3"></audio>
+    
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array.from({ length: columns }, () => Math.floor(Math.random() * canvas.height));
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff00';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        function playTypingSound() {
+            const sound = document.getElementById("typingSound");
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function authenticate() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const terminalBox = document.getElementById("terminalBox");
+            const hackerTerminal = document.getElementById("hackerTerminal");
+
+            if (username === "hacker" && password === "1234") {
+                document.getElementById("accessGranted").play();
+                setTimeout(() => {
+                    terminalBox.classList.add("hidden");
+                    hackerTerminal.classList.remove("hidden");
+                    document.getElementById("commandInput").focus();
+                }, 1500);
+            } else {
+                document.getElementById("accessDenied").play();
+            }
+        }
+
+        function handleCommand(event) {
+            if (event.key === "Enter") {
+                const input = document.getElementById("commandInput");
+                const output = document.getElementById("terminalOutput");
+                output.textContent += `\n> ${input.value}`;
+                input.value = "";
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
